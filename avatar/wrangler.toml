@@ -1,0 +1,4 @@
+name = "avatar"
+main = "src/index.ts"
+compatibility_date = "2024-03-28"
+route = { pattern = "avatar.helbling.uk", custom_domain = true }

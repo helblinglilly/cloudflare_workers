@@ -76,7 +76,10 @@ export default {
 			}
 
 			return new Response(JSON.stringify(responseBody), {
-				headers: { 'Content-Type': 'application/json' }
+				headers: {
+					'Content-Type': 'application/json',
+					'Cache-Control': 'no-store',
+				}
 			});
 		} catch(err){
 			console.log(err);

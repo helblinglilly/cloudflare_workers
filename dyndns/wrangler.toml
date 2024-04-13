@@ -1,0 +1,7 @@
+name = "dyndns"
+main = "src/index.ts"
+compatibility_date = "2024-04-13"
+route = { pattern = "dyndns.helbling.uk", custom_domain = true }
+kv_namespaces = [
+  { binding = "KV_CONFIGS", id = "158e377401c546b2ab7f5023062a1ed4" }
+]

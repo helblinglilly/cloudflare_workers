@@ -35,3 +35,11 @@ cd ./sample-worker
 cd ./sample-worker
 
 `npm run dev`
+
+# Add a new project
+
+```sh
+mkdir newProjectName
+cd newProjectName
+wrangler generate
+```

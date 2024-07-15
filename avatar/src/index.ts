@@ -16,13 +16,34 @@ export default {
 		ctx: ExecutionContext
 	): Promise<Response> {
 		const self = 'avatar.helbling.uk';
-	
-		const key = request.url.split(self)[1] ?? 'blank';
+        const key = request.url.split(self)[1] ?? 'blank';
+        const origin = request.headers.get('Origin') || '';
 
-		return new Response(toSvg(key, 128), {
-			headers: {
-				'Content-Type': 'image/svg+xml'
-			}
-		});
+        // Function to check if the origin is allowed
+        const isAllowedOrigin = (origin: string): boolean => {
+			return ['http://localhost:5173', 'https://pokecompanion.com', 'https://helbling.uk'].includes(origin);
+        };
+
+        let headers = new Headers({
+            'Content-Type': 'image/svg+xml'
+        });
+
+        // Set CORS headers if origin is allowed
+        if (isAllowedOrigin(origin)) {
+            headers.set('Access-Control-Allow-Origin', origin);
+            headers.set('Access-Control-Allow-Methods', 'GET');
+            headers.set('Access-Control-Allow-Headers', 'Content-Type');
+        }
+
+        // Handle preflight (OPTIONS) request
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: headers
+            });
+        }
+
+        return new Response(toSvg(key, 128), {
+            headers: headers
+        });
 	},
 };

@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <title>QR Codes</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="/qr.js"></script>
+
+    <script type="text/javascript">
+      var qrcode;
+      document.addEventListener("DOMContentLoaded", function () {
+        const input = document.querySelector("#input");
+
+        input.addEventListener("keyup", (e) => {
+          generateQRCode(e.target.value);
+        });
+
+        const pathname = window.location.pathname;
+        if (pathname) {
+          generateQRCode(pathname.slice(1));
+          input.value = pathname.slice(1);
+        }
+      });
+
+      function generateQRCode(url) {
+        const target = document.getElementById("qrcode");
+
+        if (qrcode) {
+          qrcode.clear();
+        }
+        if (target.innerHTML) {
+          target.innerHTML = null;
+        }
+
+        qrcode = new QRCode(target, {
+          text: url,
+          width: 128,
+          height: 128,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H,
+        });
+      }
+    </script>
+
+    <style>
+      body {
+        display: grid;
+        justify-content: center;
+      }
+
+      input {
+        height: 3rem;
+        min-width: 32rem;
+        text-align: center;
+      }
+
+      #qrcode {
+        padding: 2rem;
+        display: grid;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <input id="input" placeholder="https://www.google.com" type="text" minlength="3" />
+
+    <div id="qrcode"></div>
+  </body>
+</html>

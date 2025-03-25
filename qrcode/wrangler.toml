@@ -1,0 +1,5 @@
+name = "qrcode"
+main = "src/index.ts"
+compatibility_date = "2025-03-25"
+node_compat = true
+route = { pattern = "qr.helbling.uk", custom_domain = true }

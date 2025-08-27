@@ -25,5 +25,9 @@ export async function postMessage(message: IParsedMemoHook, baseUrl: string) {
 		body: JSON.stringify(body),
 	});
 
+	if (!res.ok){
+		throw new Error(`Discord gave non-200 status code ${res.status}`);
+	}
+
 	return res.status;
 }

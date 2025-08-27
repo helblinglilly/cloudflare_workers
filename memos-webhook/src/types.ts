@@ -1,18 +1,28 @@
+export enum Visibility {
+	Private = 1,
+	Protected = 2,
+	Public = 3
+}
 export interface IMemoHookEvent {
 	url: string;
 	activityType: 'memos.memo.created' | 'memos.memo.deleted',
 	creator: string;
-	createTime: string;
 	memo: {
 		name: string;
-		state: 'NORMAL';
+		state: number;
 		creator: string;
-		createTime: string;
-		updateTime: string;
-		displayTime: string;
+		create_time: {
+			seconds: number; // 1756330954
+		},
+		update_time: {
+			seconds: number; // 1756330954
+		}
+		display_time: {
+			seconds: number; // 1756330954
+		}
 		content: string;
 		nodes: unknown[];
-		visibility: 'PRIVATE' | 'PUBLIC',
+		visibility: Visibility,
 		property: object;
 		snippet: string;
 	}

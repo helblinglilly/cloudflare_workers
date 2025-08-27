@@ -12,7 +12,7 @@
  */
 
 import { postMessage } from "./discord";
-import type { IMemoHookEvent } from "./types";
+import { Visibility, type IMemoHookEvent } from "./types";
 import { parseWebHookEvent } from "./webhookParser";
 
 export default {
@@ -22,31 +22,34 @@ export default {
 		}
 
 		try {
+			const contentType = request.headers.get("content-type") || "";
 
-		const contentType = request.headers.get("content-type") || "";
+			if (!contentType.includes("application/json")) {
+				throw new Error(`Can only accept application/json but got ${contentType}`);
+			}
 
-		if (!contentType.includes("application/json")) {
-			return new Response(
-				`Can only accept application/json but got ${contentType}`,
-				{ status: 400 },
-			);
-		}
+			const requestUrl = new URL(request.url);
+			const memosHost = requestUrl.searchParams.get('from');
+			const discordTarget = requestUrl.searchParams.get('discord');
 
-		const body = await request.json();
-		if (typeof body !== "object" || !body) {
-			return new Response("Parsed body was not an object or null", {
-				status: 500,
-			});
-		}
+			if (!memosHost || !discordTarget){
+				throw new Error('Did not include "host" or "discord" query param')
+			}
 
-		const memoEvent = parseWebHookEvent(body as unknown as IMemoHookEvent, env.MEMOS_HOST);
+			const body = await request.json();
 
-		if (memoEvent.visibility !== 'PUBLIC' || memoEvent.activity !== 'memos.memo.created'){
-			return new Response('Not a public post - not doing anything', { status: 200 });
-		}
-		await postMessage(memoEvent, env.DISCORD_WEBHOOK_URL)
+			if (typeof body !== "object" || !body) {
+				throw new Error("Parsed body was not an object or null")
+			}
 
-		return new Response("Ok");
+			const memoEvent = parseWebHookEvent(body as unknown as IMemoHookEvent, memosHost);
+
+			if (memoEvent.visibility !== Visibility.Public || memoEvent.activity !== 'memos.memo.created'){
+				return new Response('Not a public post - not doing anything', { status: 200 });
+			}
+			await postMessage(memoEvent, discordTarget)
+
+			return new Response("Ok");
 		} catch(err){
 			console.log(err);
 			return new Response(null, { status: 500 });

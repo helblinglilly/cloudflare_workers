@@ -13,9 +13,9 @@ export function parseWebHookEvent(input: IMemoHookEvent, host: string): IParsedM
 	return {
 		activity: input.activityType,
 		visibility: input?.memo?.visibility,
-		url: `${host}/m/${input.memo.name.split('memos/')[1]}`,
+		url: `https://${host}/m/${input.memo.name.split('memos/')[1]}`,
 		content: input.memo.snippet ?? '[An image]',
-		posted: new Date(input.createTime).toISOString(),
+		posted: new Date(input.memo.create_time.seconds * 1000).toISOString(),
 		user: input.creator,
 		username: getUsername(input.creator),
 		host,

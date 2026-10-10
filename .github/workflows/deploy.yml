@@ -101,15 +101,12 @@ jobs:
         working-directory: ${{ matrix.project }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: ${{ matrix.project }}/package-lock.json
-
       - run: npm ci
-
       - name: Deploy to Cloudflare
         run: npm run deploy
         env:

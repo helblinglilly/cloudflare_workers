@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+html {
+    color: #fff;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    margin-right: 10px;
+    outline: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    background-color: rgb(91 33 182 / 0.4);
+}
+
+label,
+input[type="checkbox"]:hover {
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked::before {
+    content: "x";
+    color: rgb(221 214 254); /* violet-200 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    position: relative;
+    bottom: 2px;
+}
+
+input[type="checkbox"]:checked {
+    background-color: rgb(91 33 182);
+}
+
+progress,
+progress::-webkit-progress-bar,
+progress::-moz-progress-bar {
+    appearance: none;
+    background-color: rgb(91 33 182 / 1);
+    color: rgb(91 33 182 / 1);
+    border-radius: 0.5rem;
+}
+
+progress[value],
+progress::-webkit-progress-value {
+    background-color: rgb(91 33 182 / 0.4);
+    color: rgb(91 33 182 / 1);
+}

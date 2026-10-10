@@ -1,0 +1,117 @@
+name: Deploy Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "avatar/**"
+      - "imgstripper/**"
+      - "memos-webhook/**"
+      - "mp4-web/**"
+      - "qrcode/**"
+      - "socialpreview/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect changed projects
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            avatar:
+              - 'avatar/**'
+            imgstripper:
+              - 'imgstripper/**'
+            memos-webhook:
+              - 'memos-webhook/**'
+            mp4-web:
+              - 'mp4-web/**'
+            qrcode:
+              - 'qrcode/**'
+            socialpreview:
+              - 'socialpreview/**'
+
+      - name: Build deployment matrix
+        id: matrix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          AVATAR_CHANGED: ${{ steps.filter.outputs.avatar }}
+          IMGSTRIPPER_CHANGED: ${{ steps.filter.outputs.imgstripper }}
+          MEMOS_WEBHOOK_CHANGED: ${{ steps.filter.outputs['memos-webhook'] }}
+          MP4_WEB_CHANGED: ${{ steps.filter.outputs['mp4-web'] }}
+          QRCODE_CHANGED: ${{ steps.filter.outputs.qrcode }}
+          SOCIALPREVIEW_CHANGED: ${{ steps.filter.outputs.socialpreview }}
+        run: |
+          projects=()
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$AVATAR_CHANGED" = "true" ]; then
+            projects+=("avatar")
+          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$IMGSTRIPPER_CHANGED" = "true" ]; then
+            projects+=("imgstripper")
+          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$MEMOS_WEBHOOK_CHANGED" = "true" ]; then
+            projects+=("memos-webhook")
+          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$MP4_WEB_CHANGED" = "true" ]; then
+            projects+=("mp4-web")
+          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$QRCODE_CHANGED" = "true" ]; then
+            projects+=("qrcode")
+          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$SOCIALPREVIEW_CHANGED" = "true" ]; then
+            projects+=("socialpreview")
+          fi
+
+          matrix='{"include":['
+          separator=""
+          for project in "${projects[@]}"; do
+            matrix="${matrix}${separator}{\"project\":\"${project}\"}"
+            separator=","
+          done
+          matrix="${matrix}]}"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy ${{ matrix.project }}
+    needs: changes
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: cloudflare-production-${{ matrix.project }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.changes.outputs.matrix) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.project }}/package-lock.json
+
+      - run: npm ci
+
+      - name: Deploy to Cloudflare
+        run: npm run deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
